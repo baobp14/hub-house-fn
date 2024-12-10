@@ -1,0 +1,102 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+
+        // Cấu hình Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyBSnvy0lr-UUMb0rBz6KvZV5g-JBDHLLCU",
+            authDomain: "hub-house-1910.firebaseapp.com",
+            databaseURL: "https://hub-house-1910-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "hub-house-1910",
+            storageBucket: "hub-house-1910.firebasestorage.app",
+            messagingSenderId: "972992748057",
+            appId: "1:972992748057:web:608b259bb2965060196888"
+        };
+
+        // Khởi tạo Firebase App và Database
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Hàm đăng nhập
+        window.saveUser = async function saveUser() {
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+            const status = document.getElementById("status");
+
+            try {
+                const dbRef = ref(db);
+                const snapshot = await get(child(dbRef, "users"));
+
+                if (!snapshot.exists()) {
+                    status.textContent = "No users found!";
+                    return;
+                }
+
+                const users = snapshot.val();
+
+                for (const userId in users) {
+                    const user = users[userId];
+                    if (user.email === email && user.password === password) {
+                        localStorage.setItem("userId", userId);
+
+                        status.textContent = "Login successful! Welcome, " + user.name;
+                        status.style.color = "green";
+                        window.location.href = "index.html";
+                        alert(userId);
+                        return;
+                    }
+                }
+
+                status.textContent = "Invalid email or password!";
+                status.style.color = "red";
+            } catch (error) {
+                console.error(error);
+                status.textContent = "An error occurred!";
+                status.style.color = "red";
+            }
+        };
+        
+
+    </script>
+    <script>
+            function chuyenTrang() {
+                window.location.href = "reg.html"; // Thay đổi "trang_moi.html" thành URL bạn muốn chuyển đến
+            }
+    </script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div class="bg-white shadow-lg rounded-lg flex w-full max-w-4xl">
+        <div class="w-1/2 p-8 flex flex-col items-center justify-center bg-gray-100 rounded-l-lg">
+            <h2 class="text-3xl font-bold mb-4">Welcome Back!</h2>
+            <p class="text-gray-600 mb-8 text-center">To keep connected with us please login with your personal info</p>
+            <button class="bg-blue-600 text-white px-6 py-2 rounded-full shadow-md hover:bg-blue-700" onclick="chuyenTrang()">SIGN UP</button>
+        </div>
+        <div class="w-1/2 p-8 flex flex-col items-center justify-center">
+            <h2 class="text-3xl font-bold mb-4">Login</h2>
+
+            <form class="w-full max-w-sm" onsubmit="event.preventDefault(); saveUser();">
+                <div class="mb-4">
+                    <input class="w-full px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-600" type="email" id="email" placeholder="Email" required>
+                </div>
+                <div class="mb-4">
+                    <input class="w-full px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-600" type="password" id="password" placeholder="Password" required>
+                </div>
+                <span id="status"></span>
+                <button   type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-full shadow-md hover:bg-blue-700 w-full">SIGN IN</button>
+              
+
+            </form>
+        </div>
+    </div>
+
+</body>
+</html>

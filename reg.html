@@ -1,0 +1,165 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+        import { get, child } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBSnvy0lr-UUMb0rBz6KvZV5g-JBDHLLCU",
+            authDomain: "hub-house-1910.firebaseapp.com",
+            databaseURL: "https://hub-house-1910-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "hub-house-1910",
+            storageBucket: "hub-house-1910.firebasestorage.app",
+            messagingSenderId: "972992748057",
+            appId: "1:972992748057:web:608b259bb2965060196888"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        function generateUserId() {
+            return 'user-' + Math.random().toString(36).substr(2, 9);
+        }
+
+        async function userIdExists(userId) {
+        const userRef = ref(database, 'users/' + userId);
+        const snapshot = await get(userRef);
+        return snapshot.exists();
+        }
+        
+
+        async function emailExists(email) {
+            const dbRef = ref(database, 'users/');
+            const snapshot = await get(dbRef);
+            if (snapshot.exists()) {
+                const users = snapshot.val();
+                for (const userId in users) {
+                    if (users[userId].email === email) {
+                        return true; // Email đã tồn tại
+                    }
+                }
+            }
+            return false; // Email chưa tồn tại
+        }
+
+        window.saveUser = async function () {
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+
+            // Lấy vai trò được chọn
+            const role = document.querySelector('input[name="role"]:checked');
+            if (!role) {
+                document.getElementById('status').textContent = "Please select a role.";
+                return;
+            }
+            const isLandlord = role.value === "landlord";
+
+            // Email validation regex
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            // Validate inputs
+            if (!name || !email || !password || !confirmPassword) {
+                document.getElementById('status').textContent = "Please fill out all fields.";
+                return;
+            }
+
+            if (!emailPattern.test(email)) {
+                document.getElementById('status').textContent = "Please enter a valid email address.";
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                document.getElementById('status').textContent = "Passwords do not match.";
+                return;
+            }
+
+            // Kiểm tra email đã tồn tại
+            if (await emailExists(email)) {
+                document.getElementById('status').textContent = "Email already exists. Please use a different email.";
+                return;
+            }
+
+            let userId;
+            do {
+                userId = generateUserId();
+            } while (await userIdExists(userId)); // Check if user ID exists
+
+            const userRef = ref(database, 'users/' + userId);
+
+            // Save user information to Firebase
+            set(userRef, {
+                name: name,
+                email: email,
+                password: password,
+                isLandlord: isLandlord // Thêm thông tin vai trò
+            })
+            .then(() => {
+                document.getElementById('status').textContent = "User created successfully! User ID: " + userId;
+            })
+            .catch(error => {
+                document.getElementById('status').textContent = "Error: " + error.message;
+            });
+        };
+
+
+    </script>
+    <script>
+            function chuyenTrang() {
+                window.location.href = "log.html"; // Thay đổi "trang_moi.html" thành URL bạn muốn chuyển đến
+            }
+    </script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div class="bg-white shadow-lg rounded-lg flex w-full max-w-4xl">
+        <div class="w-1/2 p-8 flex flex-col items-center justify-center bg-gray-100 rounded-l-lg">
+            <h2 class="text-3xl font-bold mb-4">Welcome Back !</h2>
+            <p class="text-gray-600 mb-8 text-center">To keep connected with us please login with your personal info</p>
+            <button class="bg-blue-600 text-white px-6 py-2 rounded-full shadow-md hover:bg-blue-700" onclick="chuyenTrang()">SIGN IN</button>
+        </div>
+        <div class="w-1/2 p-8 flex flex-col items-center justify-center">
+            <h2 class="text-3xl font-bold mb-4">Create Account</h2>
+
+            <div style="height: 30px;"></div>
+            <form class="w-full max-w-sm" onsubmit="event.preventDefault(); saveUser ();">
+                <div class="mb-4">
+                    <input class="w-full px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-600" type="text" id="name" placeholder="Name" required>
+                </div>
+                <div class="mb-4">
+                    <input style="height: 17%;" class="w-full px-4 py- 2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-600" type="email" id="email" placeholder="Email" required>
+                </div>
+                <div class="mb-4">
+                    <input class="w-full px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-600" type="password" id="password" placeholder="Password" required>
+                </div>
+                <div class="mb-4">
+                    <input class="w-full px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-600" type="password" id="confirm-password" placeholder="Confirm password" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 font-bold mb-2">Bạn là:</label>
+                    <div class="flex items-center">
+                        <input type="radio" id="landlord" name="role" value="landlord" class="mr-2">
+                        <label for="landlord" class="mr-4">Người cho thuê trọ</label>
+                        <input type="radio" id="tenant" name="role" value="tenant" class="mr-2">
+                        <label for="tenant">Người tìm trọ</label>
+                    </div>
+                </div>
+                
+                <span id="status"></span>
+                <div style="height: 20px;"></div>
+                <button style="width: 50%; margin-left: 27%;" type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-full shadow-md hover:bg-blue-700 w-full">SIGN UP</button>
+            </form>
+            
+        </div>
+    </div>
+</body>
+</html> 
